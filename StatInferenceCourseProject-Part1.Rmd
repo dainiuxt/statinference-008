@@ -6,6 +6,7 @@ output:
   pdf_document:
     fig_height: 3.5
     fig_width: 5
+  html_document: default
 ---
 
 ## Assignment Details
