@@ -1,0 +1,63 @@
+---
+title: "Statistical Inference Course Project - Part 2"
+author: "Arash Farazdaghi"
+date: "August 2014"
+output:
+  pdf_document:
+    fig_height: 3.5
+    fig_width: 5
+---
+### Global Directives
+Environment setup including the libraries and knitr parameters required.
+```{r EnvSetup}
+knitr::opts_chunk$set(echo=TRUE); library(reshape2)
+```
+
+### Data Analysis
+#### Question 1
+**Load the ToothGrowth data and perform some basic exploratory data analyses.**
+```{r Question1}
+# Load data
+data(ToothGrowth); data <- ToothGrowth
+# pre-processing for analysis
+data.melt <- melt(data, names(data)[2:3], names(data)[1])
+# examine length by supplement type
+data.meanbysupp <- dcast(data.melt, supp ~ variable, mean)
+data.varbysupp <- dcast(data.melt, supp ~ variable, var)
+# examine length by dosage
+data.meanbydose <- dcast(data.melt, dose ~ variable, mean)
+data.varbydose <- dcast(data.melt, dose ~ variable, var)
+# examine length by supplement type and dosage
+data.meanbyall <- dcast(data.melt, supp + dose ~ variable, mean)
+data.varbyall <- dcast(data.melt, supp + dose ~ variable, var)
+```
+
+#### Question 2
+**Provide a basic summary of the data.**
+
+There are a total of `r nrow(data)` unique records in the data set with `r ncol(data)` variables. By examining the mean and variance of the tooth lengths, we can see that orange juice (OJ) is a more effective supplement at low dosages than Vitamin C, while both OJ and VC have nearly the same effect with the 2mg dosage. Please see the table below for the details.
+
+```{r Question2}
+names(data.meanbyall) <- c("Supplement","Dosage","ToothLength"); data.meanbyall
+```
+
+#### Question 3
+**Use confidence intervals and hypothesis tests to compare tooth growth by supp and dose.**
+
+Gosset's t-Test is used to examine the tooth length by supplement type and dosage.
+```{r Question3}
+# t-Test of VC v. OJ supplement for 0.5mg dosage
+data.ttest.low <- t.test(data$len[1:10],data$len[31:40],paired=TRUE); data.ttest.low
+
+# t-Test of VC v. OJ supplement for 1.0mg dosage
+data.ttest.mid<- t.test(data$len[11:20],data$len[41:50],paired=TRUE); data.ttest.mid
+
+# t-Test of VC v. OJ supplement for 2.0mg dosage
+data.ttest.high <- t.test(data$len[21:30],data$len[51:60],paired=TRUE); data.ttest.high
+```
+
+#### Question 4
+**State your conclusions and the assumptions needed for your conclusions. **
+
+As can be seen, the p-values for dosages 0.5mg and 1mg are below 0.5 (`r data.ttest.low$p.value` and `r data.ttest.mid$p.value` respectively), which indicate that there is a significant difference between the two supplements at this dosage. However, the p-value for the 2mg dosage is `r data.ttest.high$p.value`, which is above 0.5, with a confidence interval of `r data.ttest.high$conf.int`, and mean of differences `r data.ttest.high$estimate`, indicating that both supplements have nearly the same effect. This is based on the assumption that the data for the 10 subjects is paired and there are no significant external factors.
+
